@@ -20,6 +20,10 @@
 // Email: b.osullivan@live.ie
 //////////////////////////////////////////////////////
 
+show "------------------------------------------------"
+show "Loading qlibs";
+show "------------------------------------------------"
+
 ///
 // Set the directory of the qlibs.q file location
 .qlibs.priv.dir:"/"sv -1_"/"vs(reverse value {})2;
@@ -37,3 +41,7 @@
 
 // Load the qlibs library
 .qlibs.load"algos.q"
+
+show "------------------------------------------------"
+show "Finished loading qlibs";
+show "------------------------------------------------"
