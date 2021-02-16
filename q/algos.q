@@ -83,3 +83,13 @@
 // Huffman example test
 .algo.huffman.priv.input:"this is an example of a huffman tree"
 .algo.huffman.priv.input~.algo.huffman.decode . .algo.huffman.encode .algo.huffman.priv.input
+
+
+// -------------------------------------------------------------------------------------------------
+// HMAC 256
+// https://en.wikipedia.org/wiki/HMAC
+// -------------------------------------------------------------------------------------------------
+
+.algo.HMAC256:{[msg;secret]
+    9_first system"echo -n \"",msg,"\" | openssl dgst -sha256 -hmac \"",secret,"\""
+ }

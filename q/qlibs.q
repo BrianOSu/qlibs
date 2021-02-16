@@ -32,15 +32,24 @@ show "------------------------------------------------"
 // Loads a given library from qlibs
 // @param x String - The library name to be laoded
 .qlibs.load:{
+    show "------------------------------------------------"
     show "Loading library: ", x;
     @[system;
         "l ",.qlibs.priv.dir,"/",x;
         show "Unable to load libarary: ",x," due to: ",];
     show "Finished library: ", x;
+    show "------------------------------------------------"
  };
 
 // Load the qlibs library
 .qlibs.load"algos.q"
+.qlibs.load"date.q"
+.qlibs.load"stats.q"
+.qlibs.load"string.q"
+.qlibs.load"time.q"
+.qlibs.load"db.q"
+
+//.qlibs.load"../binance/tp.q"
 
 show "------------------------------------------------"
 show "Finished loading qlibs";
