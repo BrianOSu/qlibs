@@ -3,17 +3,17 @@
 // --------------------------------------------------------------------------------------
 
 // gets the status of the 
-.trade.getStatus:{[ids]
+.trade.getStatus:{[ids;price]
     (`NEW`FILLED)exec ?[ordertype=`LIMIT;
-                            price < last candle_data`high;
-                            price > last candle_data`low] 
+                            price < .trade.currentHigh[price];
+                            price > .trade.currentLow[price]] 
                     from order where id in ids
  }
 
 // Checks and updates env variables if orders have been filled (Sold)
-.trade.checkOrders:{
+.trade.checkOrders:{[price]
     ids:exec id from order where status=`NEW;       // Finds orders recorded as open 
-    ids:where (ids!.trade.getStatus[ids])=`FILLED;  // Finds orders that are filled
+    ids:where (ids!.trade.getStatus[ids;price])=`FILLED;  // Finds orders that are filled
     if[count ids;                                   // Update if any are filled
         filled:select sym,time:.trade.time[],side,qty,price,total,id from order where id in ids;
         `trade upsert filled;

@@ -2,7 +2,7 @@
 // Env Variables
 // --------------------------------------------------------------------------------------
 
-ENV:`DEV
+ENV:`qa
 
 
 // --------------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ ENV:`DEV
 // --------------------------------------------------------------------------------------
 
 // 1 minute candles
-candle_data:.bi.klines[.trade.crypto;"1m"]
+candle_data:.bi.klines[.trade.crypto;"5m"]
 
 
 // --------------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ candle_data:.bi.klines[.trade.crypto;"1m"]
 
 .bi.monitorCandles:{
     //Grab latest data
-    candle_data,:select from .bi.klines[.trade.crypto;"1m"] where openTime>last candle_data`openTime;
+    candle_data,:select from .bi.klines[.trade.crypto;"5m"] where openTime>last candle_data`openTime;
 
     if[.trade.side~`BUY;
         .trade.buy candle_data]
