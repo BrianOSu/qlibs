@@ -1,6 +1,6 @@
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Private helper functions
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 .bi.priv.url:":https://api.binance.com/api/v3/"
 
 .bi.priv.body:{[x]
@@ -13,14 +13,12 @@
     $[count x; "&" sv "=" sv' flip .str.toStr each (key;value) @\: x; ""]
  }
 
-///
 // Sends a simple GET request to Binances Rest API
 // e.g https://api.binance.com/api/v3/depth?symbol=DOGEUSDT
 .bi.priv.get:{
     .j.k .Q.hg `$.bi.priv.url,x,"?",.bi.priv.encode y
  }
 
-///
 // Sends a GET request to Binances Rest API where public/private API keys and timestamp are required
 .bi.priv.get1:{
     .j.k .Q.hmb[`$.bi.priv.url,x,"?",.bi.priv.body .bi.priv.encode y;
@@ -28,7 +26,6 @@
                 ("applicaition/x-www-form-urlencoded \r\nX-MBX-APIKEY: ",.bi.priv.apikey;())][1]
  }
 
-///
 // Sends a GET request to Binances Rest API where public API key is required
 .bi.priv.get2:{
     .j.k .Q.hmb[`$.bi.priv.url,x,"?",.bi.priv.encode y;
@@ -49,9 +46,9 @@
  }
 
 
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Public API wrappers
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 .bi.priv.depth:{[s]
     data:.bi.priv.get["depth"; enlist["symbol"]!enlist s];
@@ -101,9 +98,9 @@
  }
 
 
-// --------------------------------------------------------------------------------------
-// Private API functiosn requiring public/private api keys
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Private API functions requiring public/private api keys
+//----------------------------------------------------------------------------------------------------------------------
 
 .bi.priv.queryOrder:{[s;id]
     .bi.priv.get1["order";("symbol";"orderId")!(s;id)]
@@ -137,14 +134,12 @@
         from .bi.priv.get1["myTrades";enlist["symbol"]!enlist s]
  }
 
-///
 // Base order function
 .bi.priv.order:{[s;sd;t;dict]
     d:("symbol";"side";"type")!(s;sd;t);
     .bi.priv.post["order";d,dict]
  }
 
-///
 // Test if inputs are valid for orders. Returns error if something is wrong, otherwise returns nothing
 .bi.priv.test.order:{[s;sd;t;dict]
     d:("symbol";"side";"type")!(s;sd;t);
@@ -181,7 +176,6 @@
     .bi.priv.order[s;sd;"TAKE_PROFIT_LIMIT";("timeInForce";"quantity";"price";"stopPrice")!(t;string q;string p;string sp)]
  }
 
-///
 // @param s  String - Symbol for limit order
 // @param sd String - Side of order to plce
 // @param q  Float  - Quantity of limit order

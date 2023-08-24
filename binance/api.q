@@ -1,11 +1,11 @@
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Load raw private functions
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 .qlibs.load"../binance/keys.q"
 .qlibs.load"../binance/priv.q"
 
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Public Market Data BINANCE API Functions
 // https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#market-data-endpoints
 // .bi.ping             - Test connectivity to the Rest API.
@@ -21,7 +21,7 @@
 // .bi.24hr             - 24 hour rolling window price change statistics. Careful when accessing this with no symbol.
 // .bi.price            - Latest price for a symbol or symbols.
 // .bi.bookTicker       - Best price/qty on the order book for a symbol or symbols.
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 .bi.ping:{ .bi.priv.get"ping"}
 
@@ -37,7 +37,6 @@
 
 .bi.aggTrades:{[s] .bi.priv.aggTrades s}
 
-///
 // @param s string - Symbol e.g. DOGEUSDT
 // @param i String - Interval e.g. 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
 .bi.klines:{[s;i] .bi.priv.klines ("symbol";"interval")!(s;i)}
@@ -56,7 +55,7 @@
 .bi.bookTicker:{[s].bi.priv.bookTicker s}
 
 
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Private Account Endpoints Binance API Functions
 // https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#account-endpoints
 // .bi.balance          - Returns the balance for the given symbol
@@ -76,7 +75,7 @@
 // .bi.stopLossLimit    - Creates a limit order when the stop price is reached
 // .bi.takeProfit       - Executes a market order when the stop price is reached
 // .bi.takeProfitLimit  - Executes a market order when the stop price is reached
-// --------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 .bi.balance:{[s]
     select from .bi.priv.account[] where asset like s
@@ -107,7 +106,6 @@
         from .bi.priv.myTrades[s]
  }
 
-///
 // .bi.limitOrder["DOGEUSDT";"SELL";"GTC";3466;0.085]
 // @param s   String - Symbol for limit order
 // @param sd  String - Side of order to plce
@@ -119,7 +117,6 @@
     "j"$.bi.priv.limitOrder[s;sd;t;q;p]`orderId
  }
 
-///
 // Supply either the qty or qouteQty leaving the other as 0
 // .bi.priv.marketOrder["DOGEUSDT";"BUY";();100]
 // .bi.priv.marketOrder["DOGEUSDT";"SELL";10000;()]
