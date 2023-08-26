@@ -3,46 +3,46 @@
 //----------------------------------------------------------------------------------------------------------------------
 .bi.priv.url:":https://api.binance.com/api/v3/"
 
+.bi.priv.reqBody:"applicaition/x-www-form-urlencoded \r\nX-MBX-APIKEY: ",.bi.priv.apikey
+
 .bi.priv.body:{[x]
-    nonce:string .time.toLinuxEpoch .z.p;
+    nonce:string .time.toMilli .z.p;
     x,:"&timestamp=",nonce;
     x,"&signature=",.algo.HMAC256[x;.bi.priv.privkey]
  }
 
-.bi.priv.encode:{
-    $[count x; "&" sv "=" sv' flip .str.toStr each (key;value) @\: x; ""]
+.bi.priv.httpError:{[resp]
+    if[99h~type resp; // Errors will be in a dictionary
+        if[`msg in key resp; // If the dictionary contains msg its an error
+            '"Error received from binance: ",resp`msg]];
+    resp
  }
 
 // Sends a simple GET request to Binances Rest API
 // e.g https://api.binance.com/api/v3/depth?symbol=DOGEUSDT
 .bi.priv.get:{
-    .j.k .Q.hg `$.bi.priv.url,x,"?",.bi.priv.encode y
+    .bi.priv.httpError .rest.get[.bi.priv.url,x,"?",.rest.encode y; ()]
  }
 
 // Sends a GET request to Binances Rest API where public/private API keys and timestamp are required
 .bi.priv.get1:{
-    .j.k .Q.hmb[`$.bi.priv.url,x,"?",.bi.priv.body .bi.priv.encode y;
-                `GET;
-                ("applicaition/x-www-form-urlencoded \r\nX-MBX-APIKEY: ",.bi.priv.apikey;())][1]
+    .bi.priv.httpError .rest.get[.bi.priv.url,x,"?",.bi.priv.body .rest.encode y;
+                                 (.bi.priv.reqBody;())]
  }
 
 // Sends a GET request to Binances Rest API where public API key is required
 .bi.priv.get2:{
-    .j.k .Q.hmb[`$.bi.priv.url,x,"?",.bi.priv.encode y;
-                `GET;
-                ("applicaition/x-www-form-urlencoded \r\nX-MBX-APIKEY: ",.bi.priv.apikey;())][1]
+    .bi.priv.httpError .rest.get[.bi.priv.url,x,"?",.rest.encode y; (.bi.priv.reqBody;())]
  }
 
 .bi.priv.post:{
-    .j.k .Q.hmb[`$.bi.priv.url,x,"?",.bi.priv.body .bi.priv.encode y;
-                `POST;
-                ("applicaition/x-www-form-urlencoded \r\nX-MBX-APIKEY: ",.bi.priv.apikey;())][1]
+    .bi.priv.httpError .rest.post[.bi.priv.url,x,"?",.bi.priv.body .rest.encode y;
+                                  (.bi.priv.reqBody;())]
  }
 
 .bi.priv.delete:{
-    .j.k .Q.hmb[`$.bi.priv.url,x,"?",.bi.priv.body .bi.priv.encode y;
-                `DELETE;
-                ("applicaition/x-www-form-urlencoded \r\nX-MBX-APIKEY: ",.bi.priv.apikey;())][1]
+    .bi.priv.httpError .rest.delete[.bi.priv.url,x,"?",.bi.priv.body .rest.encode y;
+                                    (.bi.priv.reqBody;())]
  }
 
 
@@ -58,25 +58,25 @@
 
 .bi.priv.trades:{[s]
     data:.bi.priv.get["trades"; enlist["symbol"]!enlist s];
-    data:update "F"$price,"F"$qty,"F"$quoteQty,.time.toQEpoch time from data;
+    data:update "F"$price,"F"$qty,"F"$quoteQty,.time.fromMilli time from data;
     select date:"d"$time,"t"$time,price,qty,quoteQty from data
  }
 
 .bi.priv.historicalTrades:{[s]
     data:.bi.priv.get2["historicalTrades"; enlist["symbol"]!enlist s];
-    data:update "F"$price,"F"$qty,"F"$quoteQty,.time.toQEpoch time from data;
+    data:update "F"$price,"F"$qty,"F"$quoteQty,.time.fromMilli time from data;
     select date:"d"$time,"t"$time,price,qty,quoteQty from data
  }
 
 .bi.priv.aggTrades:{[s]
     data:.bi.priv.get["aggTrades"; enlist["symbol"]!enlist s];
-    select date:"d"$.time.toQEpoch T,time:"t"$.time.toQEpoch T,price:"F"$p,qty:"F"$q from data
+    select date:"d"$.time.fromMilli T,time:"t"$.time.fromMilli T,price:"F"$p,qty:"F"$q from data
  }
 
 .bi.priv.klines:{[dict]
     data:.bi.priv.get["klines"; dict];
     data:flip (`ot`o`h`l`c`v`ct`qv`n`b`q`i)!flip data;
-    select openTime:.time.toQEpoch ot,closeTime:.time.toQEpoch ct,
+    select openTime:.time.fromMilli ot,closeTime:.time.fromMilli ct,
            open:"F"$o, high:"F"$h, low:"F"$l, close:"F"$c,
            volumne:"F"$v,qouteVolume:"F"$qv,trades:n from data
  }
@@ -85,13 +85,13 @@
 
 .bi.priv.24hr:{[s] .bi.priv.get["ticker/24hr";enlist["symbol"]!enlist s]}
 
-.bi.priv.price:{[s] 
+.bi.priv.price:{[s]
     $[count s;
         "F"$.bi.priv.get["ticker/price";enlist["symbol"]!enlist s]`price;
         update "F"$price from .bi.priv.get["ticker/price";()!()]]
  }
 
-.bi.priv.bookTicker:{[s] 
+.bi.priv.bookTicker:{[s]
     $[count s;
         "F"$1_.bi.priv.get["ticker/bookTicker";enlist["symbol"]!enlist s];
         update "F"$bidPrice,"F"$bidQty,"F"$askPrice,"F"$askQty from .bi.priv.get["ticker/bookTicker";()!()]]
@@ -106,32 +106,41 @@
     .bi.priv.get1["order";("symbol";"orderId")!(s;id)]
  }
 
-.bi.priv.cancelOrder:{[s;id] 
+.bi.priv.cancelOrder:{[s;id]
     .bi.priv.delete["order";("symbol";"orderId")!(s;id)]
  }
 
-.bi.priv.cancelAllOrders:{[s] 
+.bi.priv.cancelAllOrders:{[s]
     .bi.priv.delete["openOrders";enlist["symbol"]!enlist s]
  }
 
-.bi.priv.openOrders:{[s] 
-    update .time.toQEpoch time,"F"$price,"F"$origQty,"j"$orderId 
-        from .bi.priv.get1["openOrders";enlist["symbol"]!enlist s]
+.bi.priv.openOrders:{[s]
+    data:.bi.priv.get1["openOrders";enlist["symbol"]!enlist s];
+    $[count data;
+        update `$symbol,`$side,.time.fromMilli time,"F"$price,"F"$origQty,"j"$orderId
+            from data;
+        .bi.schema.allOrders]
  }
 
-.bi.priv.allOrders:{[s] 
-    update .time.toQEpoch time,"F"$price,"F"$origQty,"F"$executedQty,"F"$cummulativeQuoteQty,
-           "F"$stopPrice,"j"$orderId 
-        from .bi.priv.get1["allOrders";enlist["symbol"]!enlist s]
+.bi.priv.allOrders:{[s]
+    data:.bi.priv.get1["allOrders";enlist["symbol"]!enlist s];
+    $[count data;
+        update `$symbol, `$side, `$status, .time.fromMilli[time], "F"$price, "F"$origQty,
+                "F"$executedQty, "F"$cummulativeQuoteQty, "F"$stopPrice, "j"$orderId
+            from data;
+        .bi.schema.allOrders]
  }
 
 .bi.priv.account:{
-    update "F"$free,"F"$locked from .bi.priv.get1["account";""]`balances
+    update `$asset, "F"$free, "F"$locked from .bi.priv.get1["account";()!()]`balances
  }
 
-.bi.priv.myTrades:{[s] 
-    update .time.toQEpoch time,"F"$price,"F"$qty,"F"$quoteQty,"j"$orderId 
-        from .bi.priv.get1["myTrades";enlist["symbol"]!enlist s]
+.bi.priv.myTrades:{[s]
+    data:.bi.priv.get1["myTrades";enlist["symbol"]!enlist s];
+    $[count data;
+        update `$symbol, .time.fromMilli[time], "F"$price, "F"$qty, "F"$quoteQty, "j"$orderId
+            from data;
+        .bi.schema.trades]
  }
 
 // Base order function

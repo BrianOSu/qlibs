@@ -44,6 +44,7 @@ show "------------------------------------------------"
 // Load the qlibs library
 .qlibs.load"algos.q"
 .qlibs.load"date.q"
+.qlibs.load"rest.q"
 .qlibs.load"stats.q"
 .qlibs.load"string.q"
 .qlibs.load"time.q"
