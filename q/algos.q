@@ -91,5 +91,5 @@
 // -------------------------------------------------------------------------------------------------
 
 .algo.HMAC256:{[msg;secret]
-    9_first system"echo -n \"",msg,"\" | openssl dgst -sha256 -hmac \"",secret,"\""
+    last " " vs first system"echo -n \"",msg,"\" | openssl dgst -sha256 -hmac \"",secret,"\""
  }
